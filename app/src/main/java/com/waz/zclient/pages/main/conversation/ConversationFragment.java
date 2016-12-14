@@ -252,8 +252,6 @@ public class ConversationFragment extends BaseFragment<ConversationFragment.Cont
     private IConversation.Type toConversationType;
     private String expandedMessageId;
     private ExpandableView currentExpandableView;
-    private String lastPingMessageId;
-    private String lastHotPingMessageId;
     private Toolbar toolbar;
     private TextView toolbarTitle;
     private ShieldView shieldView;
@@ -290,9 +288,17 @@ public class ConversationFragment extends BaseFragment<ConversationFragment.Cont
                 return;
             }
             if (model.getType() == IConversation.Type.ONE_TO_ONE) {
-                toolbar.inflateMenu(R.menu.conversation_header_menu_video);
+                if (BuildConfig.SHOW_DEVELOPER_OPTIONS) {
+                    toolbar.inflateMenu(R.menu.conversation_header_menu_video_collection);
+                } else {
+                    toolbar.inflateMenu(R.menu.conversation_header_menu_video);
+                }
             } else {
-                toolbar.inflateMenu(R.menu.conversation_header_menu_audio);
+                if (BuildConfig.SHOW_DEVELOPER_OPTIONS) {
+                    toolbar.inflateMenu(R.menu.conversation_header_menu_audio_collection);
+                } else {
+                    toolbar.inflateMenu(R.menu.conversation_header_menu_audio);
+                }
             }
         }
     };
@@ -561,6 +567,9 @@ public class ConversationFragment extends BaseFragment<ConversationFragment.Cont
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
+                    case R.id.action_collection:
+                        getControllerFactory().getGiphyController().openCollection();
+                        return true;
                     case R.id.action_audio_call:
                         getControllerFactory().getCallingController().startCall(false);
                         cursorLayout.closeEditMessage(false);
@@ -1388,25 +1397,6 @@ public class ConversationFragment extends BaseFragment<ConversationFragment.Cont
     }
 
     @Override
-    public boolean ping(boolean hotKnock, String id, String message, int color) {
-        if (hotKnock) {
-            if (lastHotPingMessageId != null && lastHotPingMessageId.equals(id)) {
-                return false;
-            }
-
-            lastHotPingMessageId = id;
-        } else {
-            if (lastPingMessageId != null && lastPingMessageId.equals(id)) {
-                return false;
-            }
-
-            lastPingMessageId = id;
-        }
-
-        return true;
-    }
-
-    @Override
     public boolean isPhone() {
         return LayoutSpec.isPhone(getActivity());
     }
@@ -1534,6 +1524,15 @@ public class ConversationFragment extends BaseFragment<ConversationFragment.Cont
 
     }
 
+    @Override
+    public void openCollection() {
+
+    }
+
+    @Override
+    public void closeCollection() {
+
+    }
 
     //////////////////////////////////////////////////////////////////////////////
     //
